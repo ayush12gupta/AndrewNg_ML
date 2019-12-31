@@ -61,6 +61,8 @@ Theta2_grad = zeros(size(Theta2));
 %               the regularization separately and then add them to Theta1_grad
 %               and Theta2_grad from Part 2.
 %
+
+%PART1
 %forward propagtion
 a1=[ones(m,1) X];
 z2=a1*Theta1';
@@ -68,22 +70,53 @@ a2=[ones(size(z2,1),1) sigmoid(z2)];
 z3=a2*Theta2';
 h_theta=sigmoid(z3);
 a3=h_theta;
+%recoding y
+yb=zeros(m,num_labels);
+for i=1:m
+    yb(i,y(i))=1;
+end    
+J=(1/m)*sum(sum(-yb.*log(h_theta)-(1-yb).*log(1-h_theta)));
 
-J=(1/m)*sum(sum(-y.*log(h_theta)-(1-y).*log(1-h_theta)))
-
-
-
-
-
-
-
-
-
-
+%adding regularisation to the cost function
+regul_J=(lambda/(2*m))*(sum(sum(Theta1(:,2:end).^2))+sum(sum(Theta2(:,2:end).^2)));
+J=J+regul_J;
 
 
+%PART2
+%Back Prop
 
+for i=1:m
+    %Forward propagating
+    a_1=[1 X(i,:)]';
+    %a_1=[1; a_1];
+    
+    z_2=Theta1*a_1;
+    
+    a_2=[1;sigmoid(z_2)];
+    
+    z_3=Theta2*a_2;
+    
+    a_3=sigmoid(z_3);
+    
+    %Error
+    yi=yb(i,:);
+    delta_3=a_3-yi';
+    
+    %Prop Error Backwards
+    delta_2=(Theta2'*delta_3).*sigmoidGradient([1; z_2]);
+    delta_2=delta_2(2:end);
+    dlt2=delta_3*a_2';
+    dlt1=delta_2*a_1';
+    
+    Theta1_grad=Theta1_grad+dlt1;
+    Theta2_grad=Theta2_grad+dlt2;
+end
+Theta1_grad=Theta1_grad/m;
+Theta2_grad=Theta2_grad/m;
 
+%Adding regularisation to gradient
+Theta1_grad(:,2:end) = Theta1_grad(:,2:end) + (lambda/m) * Theta1(:,2:end);
+Theta2_grad(:,2:end) = Theta2_grad(:,2:end) + (lambda/m) * Theta2(:,2:end);
 
 
 % -------------------------------------------------------------
